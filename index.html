@@ -54,9 +54,10 @@
          overflow-x: auto;
          white-space: nowrap;
          padding-top: 8px;
-         padding-bottom: 2px;
+         padding-bottom: 4px;
          -webkit-overflow-scrolling: touch;
-         justify-content: center;
+         justify-content: flex-start;
+         max-width: 100%;
       }
 
       #nav-container::-webkit-scrollbar {
@@ -64,19 +65,20 @@
       }
 
       #nav-container button {
-         padding: 5px 14px;
+         padding: 6px 14px;
          cursor: pointer;
-         border: 1px solid rgba(255, 255, 255, 0.3);
+         border: 1px solid rgba(255, 255, 255, 0.4);
          border-radius: 20px;
-         background-color: rgba(255, 255, 255, 0.15);
+         background-color: rgba(255, 255, 255, 0.25);
          font-size: 13px;
          font-weight: 600;
          color: white;
+         flex-shrink: 0;
          transition: all 0.2s;
       }
 
       #nav-container button:active {
-         background-color: rgba(255, 255, 255, 0.35);
+         background-color: rgba(255, 255, 255, 0.4);
       }
 
       h1 {
