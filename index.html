@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+      rel="stylesheet">
+   <title>班長報告アプリ</title>
+   <style>
+      :root {
+         --primary: #06C755;
+         --primary-dark: #05b04b;
+         --header-bg: #3B62AC;
+         --bg-color: #f4f7f6;
+         --surface: #ffffff;
+         --text: #2c3e50;
+         --text-light: #7f8c8d;
+         --border: #e0e6ed;
+         --radius: 12px;
+         --shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      }
+
+      * {
+         box-sizing: border-box;
+         margin: 0;
+         padding: 0;
+      }
+
+      body {
+         font-family: 'Inter', 'Noto Sans JP', sans-serif;
+         background-color: var(--bg-color);
+         color: var(--text);
+         min-height: 100vh;
+         padding-bottom: 40px;
+      }
+
+      /* Header */
+      #app-header {
+         position: sticky;
+         top: 0;
+         z-index: 20;
+         background-color: var(--header-bg);
+         color: white;
+         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+         padding: 14px 16px;
+         text-align: center;
+      }
+
+      h1 {
+         font-size: 18px;
+         font-weight: 700;
+         letter-spacing: 0.5px;
+      }
+
+      .main-content {
+         padding: 16px 12px;
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         gap: 20px;
+      }
+
+      /* Card Wrapper */
+      .card {
+         background: var(--surface);
+         max-width: 460px;
+         width: 100%;
+         border-radius: var(--radius);
+         box-shadow: var(--shadow);
+         padding: 18px;
+         animation: fadeIn 0.4s ease-out;
+      }
+
+      @keyframes fadeIn {
+         from {
+            opacity: 0;
+            transform: translateY(10px);
+         }
+
+         to {
+            opacity: 1;
+            transform: translateY(0);
+         }
+      }
+
+      .group-title {
+         font-size: 18px;
+         font-weight: 700;
+         color: var(--header-bg);
+         margin-bottom: 14px;
+         padding-bottom: 6px;
+         border-bottom: 2px solid #e2e8f0;
+         display: flex;
+         align-items: center;
+         gap: 6px;
+      }
+
+      .group-title::before {
+         content: "■";
+         color: var(--header-bg);
+         font-size: 14px;
+      }
+
+      /* Member List Table */
+      .table-container {
+         overflow-x: auto;
+         border-radius: 8px;
+         border: 1px solid var(--border);
+         margin-bottom: 16px;
+      }
+
+      table {
+         width: 100%;
+         border-collapse: collapse;
+      }
+
+      th,
+      td {
+         padding: 12px 10px;
+         border-bottom: 1px solid var(--border);
+      }
+
+      th {
+         background-color: #f8fafc;
+         color: var(--text-light);
+         font-size: 13px;
+         font-weight: 600;
+         text-align: left;
+      }
+
+      th.num-header {
+         text-align: center;
+         width: 90px;
+      }
+
+      td.name-cell {
+         font-size: 15px;
+         font-weight: 500;
+      }
+
+      td.clickable-num-cell {
+         text-align: center;
+         cursor: pointer;
+         color: #007aff;
+         font-weight: 700;
+         font-size: 16px;
+         background-color: #f0fadf;
+         transition: background-color 0.2s;
+         border-left: 1px solid var(--border);
+      }
+
+      td.clickable-num-cell:active {
+         background-color: #dcfce7;
+      }
+
+      /* Free input / Notes */
+      .notes-container {
+         margin-bottom: 16px;
+      }
+
+      .notes-container label {
+         font-weight: 600;
+         display: block;
+         margin-bottom: 6px;
+         font-size: 13px;
+         color: var(--text-light);
+      }
+
+      textarea {
+         width: 100%;
+         padding: 10px 12px;
+         border: 1px solid var(--border);
+         border-radius: 8px;
+         font-size: 14px;
+         resize: vertical;
+         min-height: 55px;
+         font-family: inherit;
+         background-color: #fafbfc;
+      }
+
+      textarea:focus {
+         outline: none;
+         border-color: var(--header-bg);
+         box-shadow: 0 0 0 3px rgba(59, 98, 172, 0.15);
+      }
+
+      /* Line Report Button */
+      .btn-line {
+         width: 100%;
+         background-color: var(--primary);
+         color: white;
+         border: none;
+         padding: 14px;
+         font-size: 15px;
+         font-weight: bold;
+         border-radius: 10px;
+         cursor: pointer;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         gap: 8px;
+         transition: all 0.2s;
+         box-shadow: 0 4px 12px rgba(6, 199, 85, 0.2);
+      }
+
+      .btn-line:active {
+         transform: scale(0.98);
+         background-color: var(--primary-dark);
+      }
+
+      /* Optimistic & Flash Animation */
+      .optimistic-updating {
+         color: #f59e0b !important;
+         font-style: italic;
+      }
+
+      .confirmed-flash {
+         animation: flashGreen 0.8s ease-out;
+      }
+
+      @keyframes flashGreen {
+         0% {
+            background-color: #dcfce7;
+            color: var(--primary-dark);
+         }
+
+         100% {
+            background-color: #f0fadf;
+         }
+      }
+
+      /* Modals */
+      .modal-overlay {
+         display: none;
+         position: fixed;
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         background: rgba(0, 0, 0, 0.5);
+         z-index: 100;
+         backdrop-filter: blur(4px);
+         justify-content: center;
+         align-items: center;
+      }
+
+      .modal-content {
+         background: white;
+         padding: 24px;
+         border-radius: 16px;
+         width: 90%;
+         max-width: 320px;
+         text-align: center;
+      }
+
+      .modal-input {
+         width: 100%;
+         padding: 14px;
+         font-size: 24px;
+         text-align: center;
+         border: 2px solid var(--border);
+         border-radius: 12px;
+         margin: 18px 0;
+      }
+
+      .modal-btns {
+         display: flex;
+         gap: 10px;
+      }
+
+      .modal-btn {
+         flex: 1;
+         padding: 12px;
+         border-radius: 10px;
+         font-weight: bold;
+         cursor: pointer;
+         border: none;
+      }
+
+      .btn-confirm {
+         background-color: var(--header-bg);
+         color: white;
+      }
+
+      .btn-cancel {
+         background-color: #f1f5f9;
+         color: var(--text);
+      }
+
+      /* Global Loader */
+      .global-loader {
+         position: fixed;
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         background: rgba(255, 255, 255, 0.9);
+         z-index: 1000;
+         display: flex;
+         flex-direction: column;
+         justify-content: center;
+         align-items: center;
+         font-weight: bold;
+      }
+
+      .spinner {
+         width: 38px;
+         height: 38px;
+         border: 4px solid #f3f3f3;
+         border-top: 4px solid var(--header-bg);
+         border-radius: 50%;
+         animation: spin 1s linear infinite;
+         margin-bottom: 12px;
+      }
+
+      @keyframes spin {
+         0% { transform: rotate(0deg); }
+         100% { transform: rotate(360deg); }
+      }
+
+      /* Lock Screen */
+      #lock-screen {
+         position: fixed;
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         background: var(--bg-color);
+         z-index: 2000;
+         display: none;
+         flex-direction: column;
+         justify-content: center;
+         align-items: center;
+         padding: 20px;
+         text-align: center;
+      }
+
+      .lock-card {
+         background: white;
+         padding: 28px;
+         border-radius: 20px;
+         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+         width: 100%;
+         max-width: 320px;
+      }
+
+      .lock-icon {
+         font-size: 36px;
+         margin-bottom: 12px;
+      }
+
+      .lock-title {
+         font-size: 18px;
+         font-weight: bold;
+         margin-bottom: 8px;
+      }
+
+      .lock-desc {
+         font-size: 13px;
+         color: var(--text-light);
+         margin-bottom: 18px;
+         line-height: 1.4;
+      }
+
+      #passcode-input {
+         width: 100%;
+         padding: 12px;
+         font-size: 20px;
+         text-align: center;
+         border: 2px solid var(--border);
+         border-radius: 12px;
+         margin-bottom: 14px;
+         letter-spacing: 0.4em;
+      }
+   </style>
+</head>
+
+<body>
+   <div id="loader" class="global-loader">
+      <div class="spinner"></div>
+      <div>データを読み込み中...</div>
+   </div>
+
+   <header id="app-header">
+      <h1 id="app-title">班長報告アプリ</h1>
+   </header>
+
+   <main class="main-content" id="cards-container"></main>
+
+   <!-- ロック画面（認証用） -->
+   <div id="lock-screen">
+      <div class="lock-card">
+         <div class="lock-icon">🔒</div>
+         <div class="lock-title">セキュリティ認証</div>
+         <p class="lock-desc">初回のみ「合言葉」が必要です。<br>関係者以外はアクセスできません。</p>
+         <input type="number" id="passcode-input" placeholder="0000" inputmode="numeric">
+         <button class="btn-line" onclick="submitPasscode()">認証する</button>
+      </div>
+   </div>
+
+   <!-- モーダルダイアログ（数値編集） -->
+   <div id="edit-modal" class="modal-overlay">
+      <div class="modal-content">
+         <h3 id="modal-title">希望数を入力</h3>
+         <input type="number" id="modal-input" class="modal-input" inputmode="numeric">
+         <div class="modal-btns">
+            <button class="modal-btn btn-cancel" onclick="closeModal()">戻る</button>
+            <button class="modal-btn btn-confirm" onclick="confirmModal()">確定</button>
+         </div>
+      </div>
+   </div>
+
+   <!-- LIFF & Logic -->
+   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+   <script>
+      // デプロイしたGASのURLとLIFF IDを設定
+      const GAS_URL = "https://script.google.com/macros/s/AKfycby7h0FK31O4jeQBXOZKa5NHZfv8gKXTcKgNGXyru0CV6sBqCDtZHmgff3dWQoR4EwDPqA/exec";
+      const LIFF_ID = "2009783223-QYwy8XNC";
+
+      // URLパラメータから appId を取得（デフォルトは「サンプル集計」）
+      const urlParams = new URLSearchParams(window.location.search);
+      const appId = urlParams.get('appId') || 'サンプル集計';
+
+      let currentTargetCell = null;
+      let userId = null;
+
+      window.onload = async () => {
+         document.getElementById('app-title').textContent = appId;
+         try {
+            await liff.init({ liffId: LIFF_ID });
+
+            if (!liff.isLoggedIn()) {
+               liff.login();
+               return;
+            }
+
+            const profile = await liff.getProfile();
+            userId = profile.userId;
+
+            await fetchData();
+         } catch (err) {
+            console.error("LIFF Init Error:", err);
+         } finally {
+            document.getElementById('loader').style.display = 'none';
+         }
+      };
+
+      async function fetchData() {
+         return new Promise((resolve, reject) => {
+            const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
+            window[callbackName] = function (res) {
+               delete window[callbackName];
+               document.body.removeChild(script);
+
+               if (res.authRequired) {
+                  document.getElementById('lock-screen').style.display = 'flex';
+                  resolve(null);
+                  return;
+               }
+
+               document.getElementById('lock-screen').style.display = 'none';
+               if (res.title) document.getElementById('app-title').textContent = res.title;
+               render(res.data);
+               resolve(res.data);
+            };
+
+            const script = document.createElement('script');
+            script.src = `${GAS_URL}?action=getData&appId=${encodeURIComponent(appId)}&userId=${userId}&callback=${callbackName}`;
+            script.onerror = () => {
+               document.body.removeChild(script);
+               reject(new Error("データ読み込み失敗"));
+            };
+            document.body.appendChild(script);
+         });
+      }
+
+      async function submitPasscode() {
+         const pass = document.getElementById('passcode-input').value;
+         if (!pass) return;
+
+         document.getElementById('loader').style.display = 'flex';
+         try {
+            const resp = await fetch(GAS_URL, {
+               method: 'POST',
+               headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+               body: JSON.stringify({ action: 'bindUser', userId: userId, passcode: pass })
+            });
+            const result = await resp.json();
+
+            if (result.success) {
+               alert(result.message);
+               await fetchData();
+            } else {
+               alert(result.message);
+            }
+         } catch (err) {
+            alert("通信エラーが発生しました。");
+         } finally {
+            document.getElementById('loader').style.display = 'none';
+         }
+      }
+
+      function render(data) {
+         const container = document.getElementById("cards-container");
+         container.innerHTML = "";
+
+         if (!data || data.length === 0) return;
+
+         // 班の区切りインデックスを取得（1列目が「〇〇班」で終わる行）
+         const sectionIndices = [];
+         data.forEach((row, i) => {
+            if (String(row[0]).trim().endsWith("班")) {
+               sectionIndices.push(i);
+            }
+         });
+         sectionIndices.push(data.length);
+
+         for (let s = 0; s < sectionIndices.length - 1; s++) {
+            const start = sectionIndices[s];
+            const end = sectionIndices[s + 1];
+            const groupData = data.slice(start, end);
+            const groupName = String(groupData[0][0]).trim();
+
+            const card = document.createElement("div");
+            card.className = "card";
+
+            let html = `<div class="group-title">${groupName}</div>`;
+            html += `<div class="table-container"><table>
+                     <thead><tr><th>名前</th><th class="num-header">希望数</th></tr></thead>
+                     <tbody>`;
+
+            let freeText = "";
+            let freeRowIndex = 0;
+
+            for (let i = 1; i < groupData.length; i++) {
+               const row = groupData[i];
+               const actualRow = start + i + 1; // 1-indexed
+
+               if (String(row[0]).trim() === "備考欄") {
+                  freeText = row[1] || "";
+                  freeRowIndex = actualRow;
+                  continue;
+               }
+
+               const name = row[0] || '';
+               const val = row[1] || '';
+
+               html += `<tr>
+                  <td class="name-cell">${name}</td>
+                  <td class="clickable-num-cell" data-row="${actualRow}" data-col="2" onclick="openModal(this)">${val}</td>
+               </tr>`;
+            }
+            html += `</tbody></table></div>`;
+
+            // 備考欄テキストエリア
+            html += `
+               <div class="notes-container">
+                  <label>📝 備考欄</label>
+                  <textarea data-row="${freeRowIndex}" data-col="2" placeholder="メモや補足を入力...">${freeText}</textarea>
+               </div>
+            `;
+
+            // LINEで報告するボタン
+            html += `
+               <button class="btn-line" onclick="sendLineReport('${groupName}')">
+                  <span>LINEで報告する</span>
+               </button>
+            `;
+
+            card.innerHTML = html;
+
+            // テキストエリア変更イベントの設定
+            const tx = card.querySelector("textarea");
+            if (tx && freeRowIndex > 0) {
+               tx.onchange = (e) => {
+                  saveCell(freeRowIndex, 2, e.target.value);
+               };
+            }
+
+            container.appendChild(card);
+         }
+      }
+
+      function openModal(cell) {
+         currentTargetCell = cell;
+         const name = cell.parentElement.querySelector(".name-cell").textContent;
+         document.getElementById("modal-title").textContent = `${name} さんの希望数`;
+         document.getElementById("modal-input").value = cell.textContent.trim();
+         document.getElementById("edit-modal").style.display = "flex";
+         document.getElementById("modal-input").focus();
+      }
+
+      function closeModal() {
+         document.getElementById("edit-modal").style.display = "none";
+      }
+
+      async function confirmModal() {
+         const newVal = document.getElementById("modal-input").value || "";
+         const row = currentTargetCell.dataset.row;
+         const col = currentTargetCell.dataset.col;
+         const oldVal = currentTargetCell.textContent;
+
+         currentTargetCell.textContent = newVal;
+         currentTargetCell.classList.add("optimistic-updating");
+         closeModal();
+
+         const result = await saveCell(row, col, newVal);
+
+         currentTargetCell.classList.remove("optimistic-updating");
+         if (result.success) {
+            currentTargetCell.classList.add("confirmed-flash");
+            setTimeout(() => {
+               currentTargetCell.classList.remove("confirmed-flash");
+            }, 800);
+         } else {
+            currentTargetCell.textContent = oldVal;
+            alert("保存に失敗しました。");
+         }
+      }
+
+      async function saveCell(row, col, val) {
+         try {
+            const resp = await fetch(GAS_URL, {
+               method: 'POST',
+               headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+               body: JSON.stringify({ action: 'updateCell', appId: appId, userId: userId, row: row, col: col, value: val })
+            });
+            return await resp.json();
+         } catch (err) {
+            return { success: false, message: "通信エラー" };
+         }
+      }
+
+      // LINEで報告する機能
+      async function sendLineReport(groupName) {
+         const shareUrl = `https://liff.line.me/${LIFF_ID}?appId=${encodeURIComponent(appId)}`;
+         const msgText = `【${appId}】 ${groupName} 報告しました。\n${shareUrl}`;
+
+         try {
+            if (liff.isInClient()) {
+               await liff.sendMessages([{ type: 'text', text: msgText }]);
+               alert("報告を送信しました！");
+               liff.closeWindow();
+            } else {
+               const res = await liff.shareTargetPicker([{ type: 'text', text: msgText }]);
+               if (res) alert("共有が完了しました！");
+            }
+         } catch (err) {
+            console.error("Report send failed", err);
+            alert("送信に失敗しました: " + err.message);
+         }
+      }
+   </script>
+</body>
+
+</html>
