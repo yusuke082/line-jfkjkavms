@@ -665,14 +665,17 @@
             for (let i = 1; i < groupData.length; i++) {
                const row = groupData[i];
                const actualRow = start + i + 1; // 1-indexed
+               const name = String(row[0] || '').trim();
 
-               if (String(row[0]).trim() === "備考欄") {
+               // 名前が入っていない空行は無視
+               if (!name) continue;
+
+               if (name === "備考欄") {
                   freeText = row[1] || "";
                   freeRowIndex = actualRow;
                   continue;
                }
 
-               const name = row[0] || '';
                const val = row[1] || '';
 
                html += `<tr>
@@ -690,10 +693,10 @@
                </div>
             `;
 
-            // 報告するボタン
+            // LINEへ報告するボタン
             html += `
                <button class="btn-line" onclick="sendLineReport('${groupName}')">
-                  <span>【${appId}】 ${groupName} を報告する</span>
+                  <span>【${appId}】 ${groupName} を報告</span>
                </button>
             `;
 
