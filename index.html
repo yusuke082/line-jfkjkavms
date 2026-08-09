@@ -678,7 +678,7 @@
          }
       }
 
-      // LINEで報告する機能（コンパクトFlex Message）
+      // LINEで報告する機能（極小テキストリンク型Flex Message）
       async function sendLineReport(groupName) {
          const shareUrl = `https://liff.line.me/${LIFF_ID}?appId=${appId}`;
          const flexMsg = {
@@ -686,7 +686,7 @@
             altText: `【${appId}】 ${groupName} 報告しました。`,
             contents: {
                type: "bubble",
-               size: "mega", // kilo(220px)からmega(260px)へ変更し1行に収める
+               size: "mega",
                body: {
                   type: "box",
                   layout: "vertical",
@@ -700,16 +700,17 @@
                         wrap: true
                      },
                      {
-                        type: "button",
+                        type: "text",
+                        text: "👉 アプリを開く",
+                        size: "xs",
+                        color: "#06C755",
+                        weight: "bold",
+                        margin: "sm",
                         action: {
                            type: "uri",
                            label: "アプリを開く",
                            uri: shareUrl
-                        },
-                        style: "primary",
-                        color: "#06C755",
-                        height: "sm",
-                        margin: "sm"
+                        }
                      }
                   ],
                   paddingAll: "10px"
