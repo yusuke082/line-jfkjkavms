@@ -678,18 +678,52 @@
          }
       }
 
-      // LINEで報告する機能
+      // LINEで報告する機能（超コンパクトFlex Message）
       async function sendLineReport(groupName) {
          const shareUrl = `https://liff.line.me/${LIFF_ID}?appId=${appId}`;
-         const msgText = `【${appId}】 ${groupName} 報告しました。\n${shareUrl}`;
+         const flexMsg = {
+            type: "flex",
+            altText: `【${appId}】 ${groupName} 報告しました。`,
+            contents: {
+               type: "bubble",
+               size: "micro",
+               body: {
+                  type: "box",
+                  layout: "vertical",
+                  contents: [
+                     {
+                        type: "text",
+                        text: `【${appId}】 ${groupName} 報告しました。`,
+                        weight: "bold",
+                        size: "sm",
+                        color: "#2c3e50",
+                        wrap: true
+                     },
+                     {
+                        type: "button",
+                        action: {
+                           type: "uri",
+                           label: "アプリを開く",
+                           uri: shareUrl
+                        },
+                        style: "primary",
+                        color: "#06C755",
+                        height: "sm",
+                        margin: "sm"
+                     }
+                  ],
+                  paddingAll: "10px"
+               }
+            }
+         };
 
          try {
             if (liff.isInClient()) {
-               await liff.sendMessages([{ type: 'text', text: msgText }]);
+               await liff.sendMessages([flexMsg]);
                alert("報告を送信しました！");
                liff.closeWindow();
             } else {
-               const res = await liff.shareTargetPicker([{ type: 'text', text: msgText }]);
+               const res = await liff.shareTargetPicker([flexMsg]);
                if (res) alert("共有が完了しました！");
             }
          } catch (err) {
